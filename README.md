@@ -1,9 +1,11 @@
 # particle-pulse-counter
 
-A Particle.io project the counts pulses from a dry-contact or open-collector
+A [Particle.io project](https://www.particle.io/) the counts pulses from a dry-contact or open-collector
 source.  The cumulative pulse count is published to the Particle cloud. The 
 cumulative pulse count is periodically stored into non-volatile memory and restored
 from that memory upon a reboot of the Particle device.
+
+This work was funded by the Alaska Center for Energy and Power.
 
 ## Welcome to your project!
 
