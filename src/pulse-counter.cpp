@@ -2,12 +2,12 @@
 //       THIS IS A GENERATED FILE - DO NOT EDIT       //
 /******************************************************/
 
-#line 1 "/home/alan/particle/pulse-counter/src/pulse-counter.ino"
+#line 1 "/home/alan/particle/particle-pulse-counter/src/pulse-counter.ino"
 /*
- * Project pulse-counter
- * Description:
- * Author:
- * Date:
+ * Project Particle.io pulse-counter
+ * Description: Counts cumulative pulses and publishes total to Particle cloud.
+ * Author:  Alan Mitchell
+ * Date: February 5, 2023
  */
 
 #include "Particle.h"
@@ -17,7 +17,7 @@ void loop();
 void pulseArrived();
 void checkPulse();
 void saveCountEEPROM();
-#line 10 "/home/alan/particle/pulse-counter/src/pulse-counter.ino"
+#line 10 "/home/alan/particle/particle-pulse-counter/src/pulse-counter.ino"
 SYSTEM_THREAD(ENABLED);
 SYSTEM_MODE(SEMI_AUTOMATIC);
 
@@ -36,11 +36,13 @@ const pin_t PULSE_INPUT = D2;
 std::chrono::milliseconds publishInterval = 30min;
 
 // The interval between storing the pulse count into EEPROM so that it is retained
-// across a reboot or power outage.
+// across a reboot or power outage.  If pulse count has not changed since last
+// EEPROM store, the storage operation does not occur so save EEPROM wear.
+// Also, pulse count is stored after Publish events.
 std::chrono::milliseconds eepromInterval = 2min;
 
 // Time to wait to make sure a switch closure is real and not noise
-const uint32_t pulseWaitInterval = 50;   // ms
+const uint32_t pulseWaitInterval = 20;   // ms
 
 // Minimum spacing between pulses; don't count pulses occurring before this 
 // amount of time.
@@ -109,7 +111,7 @@ void setup() {
     pinMode(PULSE_INPUT, INPUT_PULLUP);
     attachInterrupt(PULSE_INPUT, pulseArrived, FALLING);
     
-    pulseCount = 0;    // temporary override for testing
+    // pulseCount = 0;    // temporary override for testing
 
 }
 
@@ -149,9 +151,9 @@ void pulseArrived() {
 }
 
 void checkPulse() {
-    // The wait timer after a pulse pull-down has finished. Make sure pulse input pin is still
-    // pulled down and make sure there is enough gap between prior pulse.  If so, increment
-    // the pulse count.
+    // This function is called after pulseWaitTimer has expired.
+    // Increment pulse count if pulse input pin is still pulled down and make sure 
+    // there is enough gap between prior pulse.
     if ((digitalRead(PULSE_INPUT) == 0) && (millis() - lastPulseTime > minPulseSpacing)) {
         lastPulseTime = millis();
         pulseCount++;
@@ -160,9 +162,13 @@ void checkPulse() {
 }
 
 void saveCountEEPROM() {
-    // save the current pulse count in the EEPROM.
-    eepromCache.magic = eepromDataMagic;     // include magic number to indicate valid EEPROM data
-    eepromCache.pulseCount = pulseCount;
-    EEPROM.put(eepromDataOffset, eepromCache);
-    Log.info("updated EEPROM = %lu", pulseCount);
+    // save the current pulse count in the EEPROM if it has changed
+    if (pulseCount != eepromCache.pulseCount) {
+        eepromCache.magic = eepromDataMagic;     // include magic number to indicate valid EEPROM data
+        eepromCache.pulseCount = pulseCount;
+        EEPROM.put(eepromDataOffset, eepromCache);
+        Log.info("Updated EEPROM = %lu", pulseCount);
+    } else {
+        Log.info("Pulse count has not changed since last EEPROM store = %lu.", pulseCount);
+    }
 }
