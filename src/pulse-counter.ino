@@ -98,7 +98,7 @@ void setup() {
     pinMode(PULSE_INPUT, INPUT_PULLUP);
     attachInterrupt(PULSE_INPUT, pulseArrived, FALLING);
     
-    pulseCount = 0;    // temporary override for testing
+    // pulseCount = 0;    // temporary override for testing
 
 }
 
