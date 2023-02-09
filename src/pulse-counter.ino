@@ -115,7 +115,7 @@ void loop() {
             // time to publish
             lastPublish = millis();
             Log.info("count=%lu", pulseCount);
-            Particle.publish("countEvent", data.format("count=%lu", pulseCount));
+            Particle.publish("bmon_store", data.format("count=%lu", pulseCount));
             saveEEPROM = true;   // always save count to EEPROM after publish
         }
     }
