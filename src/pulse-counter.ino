@@ -22,7 +22,7 @@ const pin_t PULSE_INPUT = D2;
 
 // The interval between Cloud Publish operations that send the pulse count
 // to the cloud
-std::chrono::milliseconds publishInterval = 30min;
+std::chrono::milliseconds publishInterval = 15min;
 
 // The interval between storing the pulse count into EEPROM so that it is retained
 // across a reboot or power outage.  If pulse count has not changed since last
